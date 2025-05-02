@@ -1,6 +1,5 @@
 .venv/
 .ansible/
-.vscode/
 .archive/
 # Devenv
 .devenv*
