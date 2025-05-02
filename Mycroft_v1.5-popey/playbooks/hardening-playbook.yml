@@ -1,0 +1,31 @@
+---
+- name: Base line setup/configuration
+  hosts: all
+  handlers:
+    - name: Importing handlers
+      ansible.builtin.import_tasks: ./shared-handlers.yml
+  tasks:
+
+    - name: Hardening SSH
+      become: true
+      block:
+
+        - name: Remove manually created file
+          ansible.builtin.file:
+            state: absent
+            path: /etc/ssh/sshd_config.d/no_pass.conf
+          notify: Reload ssh
+
+        - name: Harden SSHD config
+          ansible.builtin.copy:
+            dest: /etc/ssh/sshd_config.d/00-ansible_hardening.conf
+            owner: root
+            group: root
+            mode: '600'
+            force: true
+            backup: true
+            content: |
+              PasswordAuthentication no
+              PermitRootLogin prohibit-password
+              KbdInteractiveAuthentication no
+          notify: Reload ssh

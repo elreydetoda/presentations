@@ -1,0 +1,44 @@
+---
+- name: Base line setup/configuration
+  hosts: all
+  tasks:
+
+    - name: Initial server updates prep
+      become: true
+      block:
+
+        - name: Base updates
+          ansible.builtin.apt:
+            update_cache: true
+            upgrade: full
+          register: updates_applied
+
+        - name: Restarting for kernel reloads  # noqa: no-handler
+          ansible.builtin.reboot:
+          when: updates_applied.changed
+
+    - name: Prep for ansible
+      become: true
+      block:
+
+        - name: Adding sudo file for ansible user
+          ansible.builtin.copy:
+            dest: /etc/sudoers.d/ansible-no-prompt
+            owner: root
+            group: root
+            mode: '400'
+            validate: visudo -csf %s
+            force: true
+            content: |
+              {{ ansible_user_id }} ALL=(ALL) NOPASSWD:ALL
+          when: 'ansible_user_id != "root"'
+
+        - name: Preventing OS from going to sleep
+          ansible.builtin.systemd:
+            masked: true
+            name: "{{ item }}"
+          loop:
+            - sleep.target
+            - suspend.target
+            - hibernate.target
+            - hybrid-sleep.target
