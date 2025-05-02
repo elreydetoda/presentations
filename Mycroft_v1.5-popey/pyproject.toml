@@ -1,0 +1,14 @@
+[project]
+name = "hey-mycroft-1.5-popey"
+version = "0.1.0"
+description = "https://elrey.casa/v1.5-popey"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "ansible-core>=2.18.5",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ansible-lint>=25.4.0",
+]
