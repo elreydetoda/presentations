@@ -17,7 +17,8 @@
     - name: Install Nvidia Container Toolkit
       block:
 
-        # built with testing things & based off of the install instructions + tried having LLM figure it out, but that didn't work very well...got me ~60% there & I tried stuff to finish it
+        # built with testing things & based off of the install instructions + tried having LLM figure it out,
+        #   but that didn't work very well...got me ~60% there & I tried stuff to finish it
         - name: Adding repo for Nvidia Container Toolkit
           ansible.builtin.deb822_repository:
             name: nvidia_docker
@@ -27,7 +28,7 @@
             signed_by: https://nvidia.github.io/libnvidia-container/gpgkey
           register: repo_update
 
-        - name: Update repos for nvidia package
+        - name: Update repos for nvidia package  # noqa: no-handler
           ansible.builtin.apt:
             update_cache: true
           when: repo_update.changed
@@ -59,4 +60,3 @@
       vars:
         pip_install_packages:
           - name: docker
-
