@@ -1,5 +1,5 @@
 ---
-- name: Base line setup/configuration
+- name: Some base level hardening
   hosts: all
   handlers:
     - name: Importing handlers
