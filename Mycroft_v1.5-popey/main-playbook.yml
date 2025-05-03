@@ -1,0 +1,8 @@
+- name: Reconfigure ssh & harden
+  ansible.builtin.import_playbook: playbooks/hardening-playbook.yml
+
+- name: Install nvidia & docker requirements
+  ansible.builtin.import_playbook: playbooks/nvidia_docker-playbook.yml
+
+- name: Deploy Home Assistant for Voice PE
+  ansible.builtin.import_playbook: playbooks/deploy_containers-playbook.yml
