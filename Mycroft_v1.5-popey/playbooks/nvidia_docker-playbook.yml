@@ -1,0 +1,62 @@
+---
+- name: Installing Nvidia and Docker
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Install Nvidia Drivers
+      ansible.builtin.import_role:
+        name: nvidia.nvidia_driver
+      vars:
+        # based on when chose to install 3rd party drivers during OS installation
+        nvidia_driver_branch: 570
+
+    # tried using this, but 404: https://github.com/NVIDIA/ansible-role-nvidia-docker
+    # & found the project depricated for Nvidia Container toolkit: https://github.com/NVIDIA/nvidia-docker
+    # built on: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+    - name: Install Nvidia Container Toolkit
+      block:
+
+        # built with testing things & based off of the install instructions + tried having LLM figure it out, but that didn't work very well...got me ~60% there & I tried stuff to finish it
+        - name: Adding repo for Nvidia Container Toolkit
+          ansible.builtin.deb822_repository:
+            name: nvidia_docker
+            types: deb
+            uris: https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH)
+            suites: /
+            signed_by: https://nvidia.github.io/libnvidia-container/gpgkey
+          register: repo_update
+
+        - name: Update repos for nvidia package
+          ansible.builtin.apt:
+            update_cache: true
+          when: repo_update.changed
+
+        - name: Install nvidia container toolkit
+          ansible.builtin.package:
+            state: present
+            name: nvidia-container-toolkit
+
+    - name: Install Docker
+      ansible.builtin.import_role:
+        name: geerlingguy.docker
+      vars:
+        # compose is built in now as the `compose` sub-command (e.g. docker compose version)
+        docker_install_compose_plugin: false
+        # TODO: base off of host's ansible user from inventory
+        docker_users:
+          - tars
+        # identified after running (from install guide): sudo nvidia-ctk runtime configure --runtime=docker
+        docker_daemon_options:
+          runtimes:
+            nvidia:
+              args: []
+              path: nvidia-container-runtime
+
+    - name: Install Docker python lib for container mgmt
+      ansible.builtin.import_role:
+        name: geerlingguy.pip
+      vars:
+        pip_install_packages:
+          - name: docker
+

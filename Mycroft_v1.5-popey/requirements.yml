@@ -1,7 +1,13 @@
 # collections:
 #   # - name:
 #   #   version:
-# roles:
-#   # - name: <role_name>
-#   #   version: <hash>
-#   #   src: https://github.com/<owner_slug>/<project_name>.git
+roles:
+  - name: nvidia.nvidia_driver
+    version: v2.3.0
+    src: https://github.com/NVIDIA/ansible-role-nvidia-driver.git
+  - name: geerlingguy.docker
+    version: 7.4.7
+    src: https://github.com/geerlingguy/ansible-role-docker.git
+  - name: geerlingguy.pip
+    version: 3.1.0
+    src: https://github.com/geerlingguy/ansible-role-pip.git
