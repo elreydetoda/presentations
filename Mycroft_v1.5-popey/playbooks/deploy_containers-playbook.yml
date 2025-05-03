@@ -1,0 +1,42 @@
+- name: Deploying containers
+  hosts: all
+  vars:
+    home_assistant_dir: '{{ ansible_user_dir }}/home_assistant'
+  tasks:
+
+    - name: Installing packages for HA
+      ansible.builtin.package:
+        state: present
+        name:
+          # https://community.home-assistant.io/t/bluetooth-in-docker/46547/17
+          # https://computingforgeeks.com/connect-to-bluetooth-device-from-linux-terminal/
+          - bluetooth
+          - bluez
+          - bluez-tools
+          - rfkill
+      become: true
+
+    - name: Create Home Assistant folder
+      ansible.builtin.file:
+        owner: '{{ ansible_user_id }}'
+        group: '{{ ansible_user_id }}'
+        mode: '750'
+        path: '{{ home_assistant_dir }}'
+        state: directory
+
+    - name: Transfer the compose file
+      ansible.builtin.copy:
+        owner: '{{ ansible_user_id }}'
+        group: '{{ ansible_user_id }}'
+        mode: '644'
+        src: docker-compose.yml
+        dest: '{{ home_assistant_dir }}/docker-compose.yml'
+        backup: true
+
+    - name: Deploying docker compose file
+      community.docker.docker_compose_v2:
+        project_name: home_assistant
+        project_src: '{{ home_assistant_dir }}'
+        state: present
+        wait: true
+        remove_orphans: true
