@@ -1,6 +1,8 @@
 collections:
   - name: community.docker
     version: 4.6.0
+  - name: community.general
+    version: 10.7.0
 roles:
   - name: nvidia.nvidia_driver
     version: v2.3.0

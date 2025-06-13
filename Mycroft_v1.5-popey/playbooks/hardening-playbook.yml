@@ -13,7 +13,7 @@
         - name: Remove manually created file
           ansible.builtin.file:
             state: absent
-            path: /etc/ssh/sshd_config.d/no_pass.conf
+            path: /etc/ssh/sshd_config.d/50-cloud-init.conf
           notify: Reload ssh
 
         - name: Harden SSHD config

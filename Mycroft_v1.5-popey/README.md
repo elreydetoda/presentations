@@ -2,7 +2,7 @@ Initial cmds run on remote host:
 
 ```shell
 echo 'PasswordAuthentication no' | sudo tee /etc/ssh/sshd_config.d/no_pass.conf &&
-    sudo mv /etc/ssh/sshd_config.d/{50-cloud-init.conf,.orig} ;
+    sudo mv -v /etc/ssh/sshd_config.d/50-cloud-init.conf{,.orig} ;
     sudo systemctl reload ssh
 ```
 
