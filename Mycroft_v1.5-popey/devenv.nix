@@ -15,6 +15,8 @@
     coreutils
     git
     direnv
+    rsync
+    sshpass
   ];
 
   # https://devenv.sh/languages/
