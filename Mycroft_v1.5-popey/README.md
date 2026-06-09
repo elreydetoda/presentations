@@ -14,3 +14,6 @@ eval "$(ssh-agent -s)" && ssh-add ~/.ssh/<key_name>
 ansible-playbook -K -i inventory.yml playbooks/base-playbook.yml
 ansible-playbook -i inventory.yml playbooks/hardening-playbook.yml
 ```
+
+Slides: elrey.casa/prez/v1.5-popey
+Blog post: elrey.casa/v1.5-popey
