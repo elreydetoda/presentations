@@ -1,0 +1,107 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Surveillance Architecture">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" page="1" pageWidth="2200" pageHeight="1400">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Multi-Site Surveillance &amp; Notification Architecture" style="text;html=1;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="20" width="900" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Site A -->
+        <mxCell id="siteA" value="SITE A" style="swimlane;html=1;startSize=35;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="850" height="700" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="udm" value="UniFi Dream Machine (UDM)&#10;Firewall / Router" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteA">
+          <mxGeometry x="320" y="60" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ha" value="Home Assistant&#10;Physical 2012 MacBook Pro" style="shape=mxgraph.cisco.computers_and_peripherals.laptop;" vertex="1" parent="siteA">
+          <mxGeometry x="90" y="250" width="120" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="protect" value="UniFi Protect Cameras&#10;4x Wi‑Fi Cameras" style="shape=mxgraph.cisco.video.camera;" vertex="1" parent="siteA">
+          <mxGeometry x="600" y="240" width="120" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Site B -->
+        <mxCell id="siteB" value="SITE B" style="swimlane;html=1;startSize=35;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="100" width="850" height="700" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ux" value="UniFi Express&#10;Firewall / Router" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteB">
+          <mxGeometry x="320" y="60" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="frigate" value="Frigate NVR" style="shape=mxgraph.cisco.servers.server;" vertex="1" parent="siteB">
+          <mxGeometry x="340" y="260" width="120" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vivint" value="Vivint Cameras&#10;RTSP Streams" style="shape=mxgraph.cisco.video.camera;" vertex="1" parent="siteB">
+          <mxGeometry x="90" y="250" width="120" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wyze" value="Wyze Bridge&#10;2x Wyze Cameras" style="shape=mxgraph.cisco.servers.server;" vertex="1" parent="siteB">
+          <mxGeometry x="610" y="250" width="140" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="unificam" value="UniFi Camera" style="shape=mxgraph.cisco.video.camera;" vertex="1" parent="siteB">
+          <mxGeometry x="350" y="470" width="100" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Infrastructure -->
+        <mxCell id="infra" value="SELF-HOSTED NOTIFICATION PLATFORM" style="swimlane;html=1;startSize=35;" vertex="1" parent="1">
+          <mxGeometry x="450" y="860" width="1240" height="360" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="truenas" value="TrueNAS" style="shape=mxgraph.cisco.storage.storage;" vertex="1" parent="infra">
+          <mxGeometry x="60" y="120" width="120" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="microk8s" value="MicroK8s Cluster" style="shape=mxgraph.cisco.servers.server;" vertex="1" parent="infra">
+          <mxGeometry x="340" y="120" width="140" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="traefik" value="Traefik Ingress" style="shape=mxgraph.cisco.security.firewall;" vertex="1" parent="infra">
+          <mxGeometry x="650" y="120" width="120" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ntfy" value="ntfy Notifications" style="shape=mxgraph.cisco.servers.server;" vertex="1" parent="infra">
+          <mxGeometry x="980" y="120" width="140" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="LEGEND&#10;Solid = Data Flow&#10;Dashed = VPN Tunnel&#10;Cameras = Video Sources&#10;Servers = Applications/Services" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1780" y="900" width="260" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="udm" target="ux" style="dashed=1;strokeWidth=3;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vpnlabel" value="Bi-Directional WireGuard Tunnel" style="text;html=1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="955" y="130" width="220" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" edge="1" parent="siteA" source="ha" target="udm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" edge="1" parent="siteA" source="protect" target="udm"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e4" edge="1" parent="siteB" source="vivint" target="frigate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" edge="1" parent="siteB" source="wyze" target="frigate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" edge="1" parent="siteB" source="frigate" target="ux"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" edge="1" parent="siteB" source="unificam" target="ux"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e8" edge="1" parent="1" source="protect" target="ntfy" style="strokeWidth=2;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="unificam" target="ntfy" style="strokeWidth=2;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e10" edge="1" parent="infra" source="truenas" target="microk8s"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" edge="1" parent="infra" source="microk8s" target="traefik"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" edge="1" parent="infra" source="traefik" target="ntfy"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

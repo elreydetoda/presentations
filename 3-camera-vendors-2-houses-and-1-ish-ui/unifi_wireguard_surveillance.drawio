@@ -1,0 +1,93 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Network Diagram">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="siteA" value="Site A" style="swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="520" height="520" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="udm" value="UniFi UDM Firewall" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteA">
+          <mxGeometry x="180" y="40" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ha" value="Home Assistant&#10;(2012 MacBook Pro)" style="shape=image;image=https://www.home-assistant.io/images/favicon-192x192-full.png;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="siteA">
+          <mxGeometry x="40" y="180" width="80" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="protectcams" value="4 UniFi Protect Cameras&#10;(Wi‑Fi)" style="shape=image;image=https://www.ui.com/favicon.ico;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="siteA">
+          <mxGeometry x="340" y="180" width="80" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="siteB" value="Site B" style="swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="80" width="600" height="520" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ux" value="UniFi Express Firewall" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteB">
+          <mxGeometry x="220" y="40" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="frigate" value="Frigate" style="shape=image;image=https://frigate.video/images/logo.svg;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="siteB">
+          <mxGeometry x="240" y="180" width="80" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vivint" value="Vivint Cameras&#10;(RTSP)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteB">
+          <mxGeometry x="60" y="180" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="wyze" value="2 Wyze Cameras&#10;via Wyze Bridge" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteB">
+          <mxGeometry x="400" y="180" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="unificam" value="Single UniFi Camera" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="siteB">
+          <mxGeometry x="230" y="320" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="infra" value="Self‑Hosted Notification Stack" style="swimlane;html=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="650" width="700" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="truenas" value="TrueNAS Server" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="infra">
+          <mxGeometry x="30" y="70" width="130" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="microk8s" value="MicroK8s Cluster" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="infra">
+          <mxGeometry x="220" y="70" width="130" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="traefik" value="Traefik" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="infra">
+          <mxGeometry x="410" y="70" width="130" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ntfy" value="ntfy" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="infra">
+          <mxGeometry x="600" y="70" width="80" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="udm" target="ux" style="endArrow=classic;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="labelwg" value="Bi‑Directional WireGuard Tunnels" style="text;html=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="130" width="180" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" edge="1" parent="siteA" source="ha" target="udm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" edge="1" parent="siteA" source="protectcams" target="udm"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e4" edge="1" parent="siteB" source="vivint" target="frigate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" edge="1" parent="siteB" source="wyze" target="frigate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" edge="1" parent="siteB" source="frigate" target="ux"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" edge="1" parent="siteB" source="unificam" target="ux"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e8" edge="1" parent="1" source="protectcams" target="ntfy"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="unificam" target="ntfy"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e10" edge="1" parent="infra" source="truenas" target="microk8s"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" edge="1" parent="infra" source="microk8s" target="traefik"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" edge="1" parent="infra" source="traefik" target="ntfy"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
