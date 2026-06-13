@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frigate-external
+  namespace: ingress-services
+spec:
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: TCP
+
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: frigate-external-1
+  namespace: ingress-services
+  labels:
+    kubernetes.io/service-name: frigate-external
+addressType: IPv4
+endpoints:
+  - addresses:
+      - <FRIGATE_IP>
+    conditions:
+      ready: true
+ports:
+  - name: http
+    port: 5000
+    protocol: TCP
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: frigate
+  namespace: ingress-services
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`<subdomain>.elrey.casa`)
+      kind: Rule
+      services:
+        - name: frigate-external
+          port: 5000
+  tls:
+    secretName: elrey-casa-tls

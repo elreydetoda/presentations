@@ -1,0 +1,139 @@
+services:
+  frigate:
+    container_name: frigate
+    privileged: true
+    restart: unless-stopped
+    networks:
+      - frigate
+    image: ghcr.io/blakeblackshear/frigate:stable
+    cap_add:
+      - CAP_PERFMON
+    shm_size: "256mb"
+    devices:
+      - /dev/bus/usb:/dev/bus/usb # passes the USB Coral
+      # Intel QuickSync
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./frigate.yml:/config/config.yml
+      - /mnt/frigate:/media/frigate
+      - ./db:/db
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "5000:5000"
+      - "8971:8971"
+      # - "1935:1935" # RTMP feeds
+      # - "1984:1984" # go2rtc api server
+      # - "8554:8554" # go2rtc RTSP feeds
+      # - "8555:8555" # go2rtc WebRTC feeds
+    environment:
+      # TODO: make a list & loop over indices
+      - FRIGATE_RTSP_PASSWORD0=<PASSWORD>
+      - FRIGATE_RTSP_PASSWORD1=<PASSWORD>
+      - FRIGATE_RTSP_PASSWORD2=<PASSWORD>
+      - FRIGATE_RTSP_PASSWORD3=<PASSWORD>
+      - FRIGATE_VIVINT_USER=user
+      - FRIGATE_WYZE_BRIDGE_USER=wb
+      - FRIGATE_WYZE_BRIDGE_PASSWORD=<PASSWORD>
+    depends_on:
+      - wyze-bridge
+
+  mqtt:
+    container_name: mqtt
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./mosquitto/logs/:/mosquitto/logs/
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/mqtt-auth.conf:/mosquitto/config/mqtt-auth.conf
+      - ./mosquitto/mqtt-acl.conf:/mosquitto/config/mqtt-acl.conf
+    restart: unless-stopped
+    networks:
+      - frigate
+    ports:
+      - "1883:1883"
+    depends_on:
+      - frigate
+  wyze-bridge:
+    container_name: wyze-bridge
+    restart: unless-stopped
+    image: mrlt8/wyze-bridge:2.10.3
+    networks:
+      - frigate
+    ports:
+      #- 127.0.0.1:1936:1935 # RTMP
+      #- 127.0.0.1:8554:8554 # RTSP
+      #- 127.0.0.1:8888:8888 # HLS
+      #- 127.0.0.1:8889:8889 #WebRTC
+      #- 127.0.0.1:8189:8189/udp # WebRTC/ICE
+      - 5001:5000 # WEB-UI
+    devices:
+      # Intel QuickSync
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    environment:
+      # [OPTIONAL] Credentials can be set in the WebUI
+      # API Key and ID can be obtained from the wyze dev portal: 
+      # https://developer-api-console.wyze.com/#/apikey/view
+      - WYZE_EMAIL='<EMAIL>'
+      - WYZE_PASSWORD='<PASSWORD>'
+      - API_ID='<ID>'
+      - API_KEY='<KEY>'
+      # [OPTIONAL] IP Address of the host to enable WebRTC e.g.,:
+      # - WB_IP=192.168.1.122
+      # WebUI and Stream authentication:
+      - WB_AUTH=True # Set to false to disable web and stream auth.
+      - WB_USERNAME=<USERNAME>
+      - WB_PASSWORD='<PASSWORD>'
+      - ENABLE_AUDIO=True
+      - AUDIO_CODEC=AAC
+      - FILTER_MODELS=V2
+      - ON_DEMAND=False
+      - SUBSTREAM=True
+
+  go2rtc-cam1:
+    image: alexxit/go2rtc:1.9.14
+    restart: unless-stopped
+    networks:
+      frigate:
+      macvlan_network:
+        ipv4_address: "192.168.100.4"
+    #ports:
+    #  - "1985:1984" # API/Web-UI
+    #  - "8555:8554" # RTSP feeds
+    #  - "1985:1984" # ONVIF
+    volumes:
+      - ./go2rtc-cam1.yaml:/config/go2rtc.yaml
+    environment:
+      TZ: America/New_York
+    depends_on:
+      - frigate
+  go2rtc-cam2:
+    image: alexxit/go2rtc:1.9.14
+    restart: unless-stopped
+    networks:
+      frigate:
+      macvlan_network:
+        ipv4_address: "192.168.100.5"
+    #ports:
+    #  - "1984:1984" # API/Web-UI
+    #  - "8554:8554" # RTSP feeds
+    #  - "1984:1984" # ONVIF
+    volumes:
+      - ./go2rtc-cam2.yaml:/config/go2rtc.yaml
+    environment:
+      TZ: America/New_York
+    depends_on:
+      - frigate
+
+networks:
+  frigate:
+  macvlan_network:
+    driver: macvlan
+    driver_opts:
+      parent: <interface>
+    ipam:
+      config:
+        - subnet: "192.168.100.0/24"  # Your network subnet
+          gateway: "192.168.100.1"     # Your network gateway

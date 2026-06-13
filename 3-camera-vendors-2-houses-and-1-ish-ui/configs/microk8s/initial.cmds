@@ -1,0 +1,24 @@
+# installed during server setup (on boot options for ubuntu server)
+printf 'microk8s\nkubectl\nhelm' | xargs -tn1 snap install --classic
+helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
+kubectl create namespace traefik
+git clone https://github.com/timothystewart6/launchpad
+cd launchpad/kubernetes/traefik-cert-manager/
+
+
+printf 'dns\nhostpath-storage\nmetallb:192.168.1.41-192.168.1.45' | xargs -tn1 microk8s enable
+
+cd launchpad/kubernetes/traefik-cert-manager/traefik/
+
+helm uninstall --namespace=traefik traefik traefik/traefik --values=values.yaml
+helm install --namespace=traefik traefik traefik/traefik --values=values.yaml
+
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+kubectl create namespace cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.4/cert-manager.crds.yaml
+cd ../cert-manager/
+ls
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --values=values.yaml --version v1.19.4
+ 

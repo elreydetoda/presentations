@@ -1,0 +1,15 @@
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+
+onvif:
+  listen: ":1984"
+
+log:
+  level: info
+
+streams:
+  wb_cam1:
+    - rtsp://frigate:8554/go2_wb_cam2

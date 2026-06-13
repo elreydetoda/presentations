@@ -1,0 +1,142 @@
+database:
+  path: /db/frigate.db
+mqtt:
+  host: mqtt
+  topic_prefix: frigate
+  client_id: frigate
+  user: frigate
+  password: <REPLACE>
+detectors:
+  coral:
+    device: usb
+    type: edgetpu
+go2rtc:
+  streams:
+    go2_wb_cam1:
+      - ffmpeg:rtsp://{FRIGATE_WYZE_BRIDGE_USER}:{FRIGATE_WYZE_BRIDGE_PASSWORD}@wyze-bridge:8554/cam-1
+    go2_wb_cam2:
+      - ffmpeg:rtsp://{FRIGATE_WYZE_BRIDGE_USER}:{FRIGATE_WYZE_BRIDGE_PASSWORD}@wyze-bridge:8554/cam-2
+    # go2_wb_cam1_sub:
+    #   - ffmpeg:rtsp://{FRIGATE_WYZE_BRIDGE_USER}:{FRIGATE_WYZE_BRIDGE_PASSWORD}@wyze-bridge:8554/cam-1-sub
+    # go2_wb_cam2_sub:
+    #   - ffmpeg:rtsp://{FRIGATE_WYZE_BRIDGE_USER}:{FRIGATE_WYZE_BRIDGE_PASSWORD}@wyze-bridge:8554/cam-2-sub
+    go2_frigate_backdoor:
+      - ffmpeg:rtsp://{FRIGATE_VIVINT_USER}:{FRIGATE_RTSP_PASSWORD3}@192.168.1.42:554/stream1,audio=opus
+    go2_frigate_frontdoor:
+      - ffmpeg:rtsp://{FRIGATE_VIVINT_USER}:{FRIGATE_RTSP_PASSWORD1}@192.168.1.41:554/stream1,audio=opus
+    go2_frigate_garage:
+      - ffmpeg:rtsp://{FRIGATE_VIVINT_USER}:{FRIGATE_RTSP_PASSWORD0}@192.168.1.40:554/stream1,audio=opus
+    go2_frigate_sidedoor:
+      - ffmpeg:rtsp://{FRIGATE_VIVINT_USER}:{FRIGATE_RTSP_PASSWORD2}@192.168.1.43:554/stream1,audio=opus
+birdseye:
+  enabled: true
+  mode: continuous
+cameras:
+  backdoor:
+    detect:
+      height: 360
+      width: 640
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_frigate_backdoor
+          roles:
+            - record
+            - detect
+          # input_args: preset-rtsp-restream
+      output_args:
+        record: preset-record-generic-audio-copy
+  frontdoor:
+    detect:
+      height: 360
+      width: 640
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_frigate_frontdoor
+          roles:
+            - record
+            - detect
+          # input_args: preset-rtsp-restream
+      output_args:
+        record: preset-record-generic-audio-copy
+  garage:
+    detect:
+      height: 360
+      width: 640
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_frigate_garage
+          roles:
+            - record
+            - detect
+          # input_args: preset-rtsp-restream
+      output_args:
+        record: preset-record-generic-audio-copy
+  sidedoor:
+    detect:
+      height: 360
+      width: 640
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_frigate_sidedoor
+          roles:
+            - record
+            - detect
+          # input_args: preset-rtsp-restream
+      output_args:
+        record: preset-record-generic-audio-copy
+  wyze-cam-1:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_wb_cam1
+          roles:
+          - record
+          - detect
+            #- path: rtsp://127.0.0.1:8554/go2_wb_cam1_sub
+            #  roles:
+            #  - detect
+      output_args:
+        record: preset-record-generic-audio-aac
+  wyze-cam-2:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/go2_wb_cam2
+          roles:
+          - record
+          - detect
+            #- path: rtsp://127.0.0.1:8554/go2_wb_cam2_sub
+            #  roles:
+            #  - detect
+      output_args:
+        record: preset-record-generic-audio-aac
+camera_groups:
+  # Required: Name of camera group
+  front:
+    # Required: list of cameras in the group
+    cameras:
+      - garage
+      - frontdoor
+    # Required: icon used for group
+    icon: LuCar
+    # Required: index of this group
+    order: 0
+  #dogs_n_garage:
+  #  # Required: list of cameras in the group
+  #  cameras:
+  #    - garage
+  #    - dog-cam
+  #  # Required: icon used for group
+  #  icon: LuCar
+  #  # Required: index of this group
+  #  order: 1
+
+record:
+  enabled: true
+  expire_interval: 60
+  retain:
+    days: 7
+    mode: all
+ffmpeg:
+  hwaccel_args: preset-vaapi
+detect:
+  enabled: true
+version: 0.16-0

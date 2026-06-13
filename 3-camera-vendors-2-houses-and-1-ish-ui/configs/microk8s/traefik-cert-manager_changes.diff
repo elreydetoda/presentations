@@ -1,0 +1,151 @@
+diff --git a/kubernetes/traefik-cert-manager/cert-manager/issuers/letsencrypt-production.yaml b/kubernetes/traefik-cert-manager/cert-manager/issuers/letsencrypt-production.yaml
+index 331a93d..e4e9bb7 100644
+--- a/kubernetes/traefik-cert-manager/cert-manager/issuers/letsencrypt-production.yaml
++++ b/kubernetes/traefik-cert-manager/cert-manager/issuers/letsencrypt-production.yaml
+@@ -1,21 +1,24 @@
+----
+-apiVersion: cert-manager.io/v1
+-kind: ClusterIssuer
+-metadata:
+-  name: letsencrypt-production
+-spec:
+-  acme:
+-    server: https://acme-v02.api.letsencrypt.org/directory
+-    email: you@example.com
+-    privateKeySecretRef:
+-      name: letsencrypt-production
+-    solvers:
+-      - dns01:
+-          cloudflare:
+-            email: you@example.com
+-            apiTokenSecretRef:
+-              name: cloudflare-token-secret
+-              key: cloudflare-token
+-        selector:
+-          dnsZones:
+-            - "example.com"
+\ No newline at end of file
++---
++apiVersion: cert-manager.io/v1
++kind: ClusterIssuer
++metadata:
++  name: letsencrypt-production
++spec:
++  acme:
++    server: https://acme-v02.api.letsencrypt.org/directory
++    email: <email>
++    privateKeySecretRef:
++      name: letsencrypt-production
++    solvers:
++      - dns01:
++          route53:
++            region: us-west-2
++            accessKeyIDSecretRef:
++              name: aws-token-secret
++              key: access-key-id
++            secretAccessKeySecretRef:
++              name: aws-token-secret
++              key: secret-access-key
++        selector:
++          dnsZones:
++            - "<domain>"
+diff --git a/kubernetes/traefik-cert-manager/traefik/default-headers.yaml b/kubernetes/traefik-cert-manager/traefik/default-headers.yaml
+index b2143ae..c026d76 100644
+--- a/kubernetes/traefik-cert-manager/traefik/default-headers.yaml
++++ b/kubernetes/traefik-cert-manager/traefik/default-headers.yaml
+@@ -7,10 +7,10 @@ spec:
+   headers:
+     browserXssFilter: true
+     contentTypeNosniff: true
+-    forceSTSHeader: true
+-    stsIncludeSubdomains: true
+-    stsPreload: true
+-    stsSeconds: 15552000
++    #forceSTSHeader: true
++    #stsIncludeSubdomains: true
++    #stsPreload: true
++    #stsSeconds: 15552000
+     referrerPolicy: no-referrer
+     contentSecurityPolicy: "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https:; frame-src 'self' https:; media-src 'self' https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
+     customFrameOptionsValue: SAMEORIGIN
+diff --git a/kubernetes/traefik-cert-manager/traefik/values.yaml b/kubernetes/traefik-cert-manager/traefik/values.yaml
+index 9823336..e812092 100644
+--- a/kubernetes/traefik-cert-manager/traefik/values.yaml
++++ b/kubernetes/traefik-cert-manager/traefik/values.yaml
+@@ -1,6 +1,6 @@
+-globalArguments:
+-  - "--global.sendanonymoususage=false"
+-  - "--global.checknewversion=false"
++global:
++  sendAnonymousUsage: false
++  checkNewVersion: false
+
+ additionalArguments:
+   - "--serversTransport.insecureSkipVerify=true"
+@@ -8,7 +8,7 @@ additionalArguments:
+
+ deployment:
+   enabled: true
+-  replicas: 3
++  replicas: 1
+   annotations: {}
+   podAnnotations: {}
+   additionalContainers: []
+@@ -16,16 +16,18 @@ deployment:
+
+ ports:
+   web:
+-    redirections:
+-      entrypoint:
+-        to: websecure
+-        priority: 10
++    http:
++      redirections:
++        entrypoint:
++          to: websecure
++          priority: 10
+   websecure:
+     http3:
+       enabled: true
+-    advertisedPort: 4443
+-    tls:
+-      enabled: true
++    exposedPort: 443
++    http:
++      tls:
++        enabled: true
+
+ ingressRoute:
+   dashboard:
+@@ -51,6 +53,6 @@ service:
+   annotations: {}
+   labels: {}
+   spec:
+-    loadBalancerIP: 192.168.30.80 # this should be an IP in the MetalLB range
++    loadBalancerIP: <IP_ADDRESS> # this should be an IP in the MetalLB range
+   loadBalancerSourceRanges: []
+   externalIPs: []
+diff --git a/kubernetes/traefik-cert-manager/cert-manager/values.yaml b/kubernetes/traefik-cert-manager/cert-manager/values.yaml
+index 978451b..edf45b8 100644
+--- a/kubernetes/traefik-cert-manager/cert-manager/values.yaml
++++ b/kubernetes/traefik-cert-manager/cert-manager/values.yaml
+@@ -1,5 +1,5 @@
+ installCRDs: false
+-replicaCount: 3
++replicaCount: 1
+ extraArgs:
+   - --dns01-recursive-nameservers=1.1.1.1:53,9.9.9.9:53
+   - --dns01-recursive-nameservers-only
+diff --git a/kubernetes/traefik-cert-manager/nginx/deployment.yaml b/kubernetes/traefik-cert-manager/nginx/deployment.yaml
+index b3edf01..3ab7d47 100644
+--- a/kubernetes/traefik-cert-manager/nginx/deployment.yaml
++++ b/kubernetes/traefik-cert-manager/nginx/deployment.yaml
+@@ -7,7 +7,7 @@ metadata:
+   labels:
+     app: nginx
+ spec:
+-  replicas: 3
++  replicas: 1
+   progressDeadlineSeconds: 600
+   revisionHistoryLimit: 2
+   strategy:

@@ -1,0 +1,87 @@
+alias: unifi-protect-notify
+description: ""
+triggers:
+  - trigger: webhook
+    allowed_methods:
+      - POST
+    local_only: true
+    webhook_id: <WEBHOOK_ID>
+conditions: []
+actions:
+  - variables:
+      url_notify: https://<your_domain>{{ trigger.json.alarm.eventPath }}
+      mac: "{{ trigger.json.alarm.triggers[0].device }}"
+      camera: |-
+        {{
+          (
+            states('input_text.unifi_camera_map') | from_json
+          ).get(mac, "Unknown camera: " + mac )
+        }}
+      message: >-
+        A notification has been triggered as "{{trigger.json.alarm.name}}" on
+        "{{ camera }}", see the recoreded event here: {{url_notify}}
+  - action: notify.mobile_app_<custom>
+    data:
+      message: Motion detected at Camera XXX
+      data:
+        image: >-
+          /api/unifiprotect/thumbnail/{{ config_entry_id(trigger.entity_id)
+          }}/{{trigger.from_state.attributes.event_id }}
+        video: |-
+          /api/unifiprotect/video/{{ config_entry_id(trigger.entity_id) }}/{{
+            trigger.from_state.attributes.event_id }}
+        clickAction: entityId:{{trigger.entity_id}}
+    enabled: false
+  - choose:
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: state
+                entity_id: input_boolean.home_stay
+                state:
+                  - "on"
+              - condition: state
+                entity_id: input_boolean.armed_away
+                state:
+                  - "on"
+        sequence:
+          - action: ntfy.publish
+            metadata: {}
+            target:
+              entity_id: notify.unifi_protect_topic
+            data:
+              email: <email>
+              title: Movement detected
+              message: "{{message}}"
+              click: "{{url_notify}}"
+            enabled: true
+        alias: Enable External Notifications
+      - conditions:
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: >
+                  {% if is_state('input_boolean.home', 'on') and 'internal' in
+                  (camera | lower) %}
+                    false
+                  {% else %}
+                    true
+                  {% endif %}
+        sequence:
+          - action: ntfy.publish
+            metadata: {}
+            target:
+              entity_id: notify.unifi_protect_topic
+            data:
+              title: Unifi Camera Event
+              message: "{{message}}"
+              click: "{{url_notify}}"
+          - action: input_datetime.set_datetime
+            metadata: {}
+            target:
+              entity_id: input_datetime.unifi_last_sent
+            data:
+              timestamp: "{{ (trigger.json.timestamp/ 1000)}}"
+        alias: Internal Notifications
+mode: single
+max_exceeded: silent
