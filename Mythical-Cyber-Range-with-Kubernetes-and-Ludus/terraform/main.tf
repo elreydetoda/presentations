@@ -15,7 +15,13 @@ provider "azurerm" {
 
 variable "location" {
   type    = string
-  default = "eastus2"
+  default = "eastus"
+  ## changed because of availability
+  # $ az vm list-skus   --size Standard_E4bs_v5   --output table
+  # ResourceType     Locations           Name              Zones    Restrictions
+  # ---------------  ------------------  ----------------  -------  --------------------------------------------------------------------------------
+  # virtualMachines  eastus              Standard_E4bs_v5  1,2,3    None
+  # virtualMachines  eastus2             Standard_E4bs_v5  1,2,3    NotAvailableForSubscription, type: Zone, locations: eastus2, zones: 3,2,1
 }
 
 variable "resource_group_name" {
@@ -33,14 +39,17 @@ variable "admin_username" {
   default = "azureuser"
 }
 
-variable "ssh_public_key" {
+variable "ssh_public_key_path" {
   type        = string
-  description = "The student's SSH public key"
+  description = "Path to the student's public SSH key"
+  # change this to the key you'll use
+  default = "~/.ssh/id_rsa.pub"
 }
 
 variable "ssh_source_cidr" {
   type        = string
   description = "Student's public IPv4 address in CIDR notation, e.g. 203.0.113.10/32"
+  sensitive = true
 }
 
 resource "azurerm_resource_group" "ludus" {
@@ -85,10 +94,22 @@ resource "azurerm_network_security_group" "ludus" {
     destination_address_prefix = "*"
   }
 
+  security_rule {
+    name                       = "Allow-WebUI"
+    priority                   = 310
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8006"
+    source_address_prefix      = var.ssh_source_cidr
+    destination_address_prefix = "*"
+  }
+
   # WireGuard must accept connections from student clients.
   security_rule {
     name                       = "Allow-WireGuard"
-    priority                   = 310
+    priority                   = 320
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Udp"
@@ -111,9 +132,6 @@ resource "azurerm_network_interface" "ludus" {
   name                = "ludus-nic"
   location            = azurerm_resource_group.ludus.location
   resource_group_name = azurerm_resource_group.ludus.name
-
-  # Accelerated networking is required for this VM family.
-  enable_accelerated_networking = true
 
   ip_configuration {
     name                          = "primary"
@@ -143,7 +161,7 @@ resource "azurerm_linux_virtual_machine" "ludus" {
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = trimspace(var.ssh_public_key)
+    public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
   }
 
   os_disk {

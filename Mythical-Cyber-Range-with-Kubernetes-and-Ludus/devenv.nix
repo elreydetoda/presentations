@@ -55,6 +55,7 @@
 
   enterShell = ''
     git --version
+    eval "$(direnv hook bash)"
   '';
 
   # https://devenv.sh/tasks/
